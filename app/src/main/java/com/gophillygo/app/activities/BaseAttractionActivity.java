@@ -76,6 +76,9 @@ public abstract class BaseAttractionActivity extends AppCompatActivity
 
         viewModel = ViewModelProviders.of(this, viewModelFactory)
                 .get(DestinationViewModel.class);
+        // Before adding an observer, be sure to remove any existing ones, in case of multiple
+        // activities on the stack.
+        viewModel.getDestinations().removeObservers(this);
         viewModel.getDestinations().observe(this, destinationResource -> {
             // shouldn't happen
             if (destinationResource == null) {

@@ -7,6 +7,8 @@ import android.databinding.ViewDataBinding;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.recyclerview.extensions.ListAdapter;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.view.menu.MenuPopupHelper;
 import android.support.v7.widget.PopupMenu;
@@ -24,7 +26,7 @@ import com.gophillygo.app.data.models.AttractionInfo;
 import java.util.List;
 
 
-public class AttractionListAdapter<T extends AttractionInfo> extends RecyclerView.Adapter {
+public class AttractionListAdapter<T extends AttractionInfo> extends ListAdapter {
 
     public interface AttractionListItemClickListener {
         void clickedAttraction(int position);
@@ -33,10 +35,10 @@ public class AttractionListAdapter<T extends AttractionInfo> extends RecyclerVie
 
     private static final String LOG_LABEL = "AttractionListAdapter";
 
-    private final Context context;
-    private final LayoutInflater inflater;
-    private final AttractionListItemClickListener listener;
-    private final int itemViewId;
+    private Context context;
+    private LayoutInflater inflater;
+    private AttractionListItemClickListener listener;
+    private int itemViewId;
 
     private List<T> attractionList;
 
@@ -57,6 +59,22 @@ public class AttractionListAdapter<T extends AttractionInfo> extends RecyclerVie
         }
     }
 
+    private AttractionListAdapter() {
+        super(new DiffUtil.ItemCallback<T>() {
+            @Override
+            public boolean areItemsTheSame(T oldItem, T newItem) {
+                // Returns true if these are for the same attraction; properties may differ.
+                return oldItem.getAttraction().getPlaceID() == newItem.getAttraction().getPlaceID() &&
+                        oldItem.getAttraction().isEvent() == newItem.getAttraction().isEvent();
+            }
+
+            @Override
+            public boolean areContentsTheSame(T oldItem, T newItem) {
+                return oldItem.equals(newItem);
+            }
+        });
+    }
+
     /**
      * Construct a generalized list adapter for places or events.
      *
@@ -67,6 +85,7 @@ public class AttractionListAdapter<T extends AttractionInfo> extends RecyclerVie
      */
     public AttractionListAdapter(Context context, List<T> attractions, int itemViewId,
                                  AttractionListItemClickListener listener) {
+        this();
         this.context = context;
         this.inflater = LayoutInflater.from(context);
         this.attractionList = attractions;
